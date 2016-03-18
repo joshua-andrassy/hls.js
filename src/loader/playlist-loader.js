@@ -96,6 +96,31 @@ class PlaylistLoader extends EventHandler {
     return levels;
   }
 
+  parseMasterPlaylistMedia(string, baseurl, type) {
+    let medias = [], result;
+
+    // https://regex101.com is your friend
+    const re = /#EXT-X-MEDIA:(.*)/g;
+    while ((result = re.exec(string)) != null){
+      const media = {};
+      var attrs = new AttrList(result[1]);
+      if(attrs.TYPE === type) {
+        media.groupId = attrs['GROUP-ID'];
+        media.name = attrs.NAME;
+        media.default = (attrs.DEFAULT === 'YES');
+        media.autoselect = (attrs.AUTOSELECT === 'YES');
+        media.forced = (attrs.FORCED === 'YES');
+        media.url = (attrs.URI)?this.resolve(attrs.URI, baseurl):'';
+        media.lang = attrs.LANGUAGE;
+        if(!media.name) {
+            media.name = media.lang;
+        }
+        medias.push(media);
+      }
+    }
+    return medias;
+  }
+
   avc1toavcoti(codec) {
     var result, avcdata = codec.split('.');
     if (avcdata.length > 2) {
@@ -223,7 +248,7 @@ class PlaylistLoader extends EventHandler {
         id = this.id,
         id2 = this.id2,
         hls = this.hls,
-        levels;
+        levels, audiotracks;
     // responseURL not supported on some browsers (it is used to detect URL redirection)
     // data-uri mode also not supported (but no need to detect redirection)
     if (url === undefined || url.indexOf('data:') === 0) {
@@ -246,9 +271,10 @@ class PlaylistLoader extends EventHandler {
         }
       } else {
         levels = this.parseMasterPlaylist(string, url);
+        audiotracks = this.parseMasterPlaylistMedia(string, url, 'AUDIO');
         // multi level playlist, parse level info
         if (levels.length) {
-          hls.trigger(Event.MANIFEST_LOADED, {levels: levels, url: url, stats: stats});
+          hls.trigger(Event.MANIFEST_LOADED, {levels: levels, audioTracks : audiotracks, url: url, stats: stats});
         } else {
           hls.trigger(Event.ERROR, {type: ErrorTypes.NETWORK_ERROR, details: ErrorDetails.MANIFEST_PARSING_ERROR, fatal: true, url: url, reason: 'no level found in manifest'});
         }
