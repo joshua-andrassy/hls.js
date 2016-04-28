@@ -11,8 +11,9 @@ import PassThroughRemuxer from '../remux/passthrough-remuxer';
 
 class DemuxerInline {
 
-  constructor(hls,typeSupported) {
+  constructor(hls,id,typeSupported) {
     this.hls = hls;
+    this.id = id;
     this.typeSupported = typeSupported;
   }
 
@@ -26,18 +27,19 @@ class DemuxerInline {
   push(data, audioCodec, videoCodec, timeOffset, cc, level, sn, duration) {
     var demuxer = this.demuxer;
     if (!demuxer) {
-      var hls = this.hls;
+      let hls = this.hls,
+          id = this.id;
       // probe for content type
       if (TSDemuxer.probe(data)) {
         if (this.typeSupported.mp2t === true) {
-          demuxer = new TSDemuxer(hls,PassThroughRemuxer);
+          demuxer = new TSDemuxer(hls,id,PassThroughRemuxer);
         } else {
-          demuxer = new TSDemuxer(hls,MP4Remuxer);
+          demuxer = new TSDemuxer(hls,id,MP4Remuxer);
         }
       } else if(AACDemuxer.probe(data)) {
-        demuxer = new AACDemuxer(hls,MP4Remuxer);
+        demuxer = new AACDemuxer(hls,id,MP4Remuxer);
       } else {
-        hls.trigger(Event.ERROR, {type : ErrorTypes.MEDIA_ERROR, details: ErrorDetails.FRAG_PARSING_ERROR, fatal: true, reason: 'no demux matching with content found'});
+        hls.trigger(Event.ERROR, {type : ErrorTypes.MEDIA_ERROR, id : id, details: ErrorDetails.FRAG_PARSING_ERROR, fatal: true, reason: 'no demux matching with content found'});
         return;
       }
       this.demuxer = demuxer;
