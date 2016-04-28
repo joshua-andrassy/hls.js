@@ -44,16 +44,16 @@ class TimelineController extends EventHandler {
 
   onFragLoaded(data)
   {
-    var pts = data.frag.start; //Number.POSITIVE_INFINITY;
-
-    // if this is a frag for a previously loaded timerange, remove all captions
-    // TODO: consider just removing captions for the timerange
-    if (pts <= this.lastPts)
-    {
-      this.cea708Interpreter.clear();
+    if (data.frag.type === 'main') {
+      var pts = data.frag.start; //Number.POSITIVE_INFINITY;
+      // if this is a frag for a previously loaded timerange, remove all captions
+      // TODO: consider just removing captions for the timerange
+      if (pts <= this.lastPts)
+      {
+        this.cea708Interpreter.clear();
+      }
+      this.lastPts = pts;
     }
-
-    this.lastPts = pts;
   }
 
   onFragParsingUserdata(data) {
