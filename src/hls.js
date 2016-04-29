@@ -10,6 +10,7 @@ import FragmentLoader from './loader/fragment-loader';
 import AbrController from    './controller/abr-controller';
 import BufferController from  './controller/buffer-controller';
 import CapLevelController from  './controller/cap-level-controller';
+import AudioStreamController from  './controller/audio-stream-controller';
 import StreamController from  './controller/stream-controller';
 import LevelController from  './controller/level-controller';
 import TimelineController from './controller/timeline-controller';
@@ -86,6 +87,7 @@ class Hls {
           capLevelController : CapLevelController,
           fpsController: FPSController,
           streamController: StreamController,
+          audioStreamController : AudioStreamController,
           timelineController: TimelineController,
           enableCEA708Captions: true,
           enableMP2TPassThrough : false
@@ -140,6 +142,7 @@ class Hls {
     this.capLevelController = new config.capLevelController(this);
     this.fpsController = new config.fpsController(this);
     this.streamController = new config.streamController(this);
+    this.audioStreamController = new config.audioStreamController(this);
     this.timelineController = new config.timelineController(this);
     this.audioTrackController = new AudioTrackController(this);
     this.keyLoader = new KeyLoader(this);
@@ -157,6 +160,7 @@ class Hls {
     this.capLevelController.destroy();
     this.fpsController.destroy();
     this.streamController.destroy();
+    this.audioStreamController.destroy();
     this.timelineController.destroy();
     this.audioTrackController.destroy();
     this.keyLoader.destroy();
@@ -187,12 +191,14 @@ class Hls {
     logger.log('startLoad');
     this.levelController.startLoad();
     this.streamController.startLoad(startPosition);
+    this.audioStreamController.startLoad(startPosition);
   }
 
   stopLoad() {
     logger.log('stopLoad');
     this.levelController.stopLoad();
     this.streamController.stopLoad();
+    this.audioStreamController.stopLoad();
   }
 
   swapAudioCodec() {
